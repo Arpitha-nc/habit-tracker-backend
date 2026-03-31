@@ -1,0 +1,32 @@
+package com.habit.tracker.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+
+public class CreateHabitRequest {
+
+    @NotBlank(message = "Name is required")
+    private String name;
+
+    private String description;
+
+    public CreateHabitRequest() {
+
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+}
