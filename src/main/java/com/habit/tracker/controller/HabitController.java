@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.habit.tracker.dto.request.CreateHabitRequest;
 import com.habit.tracker.dto.response.HabitResponse;
+import com.habit.tracker.dto.response.HeatmapResponse;
+import com.habit.tracker.dto.response.WeeklyProgressResponse;
 import com.habit.tracker.service.HabitService;
 
 import jakarta.validation.Valid;
@@ -45,4 +47,15 @@ public class HabitController {
 
         habitService.completeHabit(habitId);
     }
+
+    @GetMapping("/progress/weekly")
+    public List<WeeklyProgressResponse> getWeeklyProgress() {
+        return habitService.getWeeklyProgress();
+    }
+
+    @GetMapping("/progress/heatmap")
+    public List<HeatmapResponse> getHeatmap() {
+        return habitService.getHeatmap();
+    }
+
 }
