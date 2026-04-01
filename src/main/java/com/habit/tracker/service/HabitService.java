@@ -1,7 +1,9 @@
 package com.habit.tracker.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -9,9 +11,12 @@ import org.springframework.stereotype.Service;
 
 import com.habit.tracker.dto.request.CreateHabitRequest;
 import com.habit.tracker.dto.response.HabitResponse;
+import com.habit.tracker.dto.response.HeatmapResponse;
+import com.habit.tracker.dto.response.WeeklyProgressResponse;
 import com.habit.tracker.entity.Habit;
 import com.habit.tracker.entity.HabitEntry;
 import com.habit.tracker.entity.User;
+import com.habit.tracker.exception.ResourceNotFoundException;
 import com.habit.tracker.mapper.HabitMapper;
 import com.habit.tracker.repository.HabitEntryRepository;
 import com.habit.tracker.repository.HabitRepository;
@@ -66,7 +71,7 @@ public class HabitService {
         LocalDate today = LocalDate.now();
 
         Habit habit = habitRepository.findById(habitId)
-                .orElseThrow(() -> new RuntimeException("Habit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
 
         HabitEntry entry = habitEntryRepository
                 .findByHabitIdAndDate(habitId, today)
@@ -111,12 +116,67 @@ public class HabitService {
     }
 
     // WEEKLY PROGRESS
-    public List<HabitEntry> getWeeklyEntries(UUID habitId) {
+    public List<WeeklyProgressResponse> getWeeklyProgress() {
+
+        User user = CurrentUserUtil.getCurrentUser();
 
         LocalDate end = LocalDate.now();
         LocalDate start = end.minusDays(6);
 
-        return habitEntryRepository
-                .findByHabitIdAndDateBetween(habitId, start, end);
+        List<HabitEntry> entries = habitEntryRepository.findByHabitIdAndDateBetween(
+                user.getId(),
+                start,
+                end);
+
+        Map<LocalDate, Long> grouped = entries.stream()
+                .filter(HabitEntry::isCompleted)
+                .collect(Collectors.groupingBy(
+                        HabitEntry::getDate,
+                        Collectors.counting()));
+
+        List<WeeklyProgressResponse> result = new ArrayList<>();
+
+        for (int i = 0; i < 7; i++) {
+
+            LocalDate date = start.plusDays(i);
+
+            int count = grouped.getOrDefault(date, 0L).intValue();
+
+            result.add(new WeeklyProgressResponse(date, count));
+        }
+
+        return result;
+    }
+
+    public List<HeatmapResponse> getHeatmap() {
+
+        User user = CurrentUserUtil.getCurrentUser();
+
+        LocalDate end = LocalDate.now();
+        LocalDate start = end.minusDays(364);
+
+        List<HabitEntry> entries = habitEntryRepository.findByHabitIdAndDateBetween(
+                user.getId(),
+                start,
+                end);
+
+        Map<LocalDate, Long> grouped = entries.stream()
+                .filter(HabitEntry::isCompleted)
+                .collect(Collectors.groupingBy(
+                        HabitEntry::getDate,
+                        Collectors.counting()));
+
+        List<HeatmapResponse> result = new ArrayList<>();
+
+        for (int i = 0; i <= 364; i++) {
+
+            LocalDate date = start.plusDays(i);
+
+            int count = grouped.getOrDefault(date, 0L).intValue();
+
+            result.add(new HeatmapResponse(date, count));
+        }
+
+        return result;
     }
 }
