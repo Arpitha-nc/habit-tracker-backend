@@ -7,6 +7,7 @@ import com.habit.tracker.dto.request.LoginRequest;
 import com.habit.tracker.dto.request.RegsiterRequest;
 import com.habit.tracker.dto.response.AuthResponse;
 import com.habit.tracker.entity.User;
+import com.habit.tracker.exception.BadRequestException;
 import com.habit.tracker.mapper.UserMapper;
 import com.habit.tracker.repository.UserRepository;
 import com.habit.tracker.security.JwtService;
@@ -26,7 +27,7 @@ public class AuthService {
 
     public AuthResponse register(RegsiterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new BadRequestException("Email already in use");
         }
 
         User user = UserMapper.toEntity(request);
@@ -40,10 +41,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new BadRequestException("Invalid email or password");
         }
 
         String token = jwtService.generateToken(user.getEmail());
