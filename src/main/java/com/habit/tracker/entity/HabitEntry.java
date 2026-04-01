@@ -3,6 +3,7 @@ package com.habit.tracker.entity;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -24,12 +25,14 @@ public class HabitEntry extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false)
     private LocalDate date;
 
+    @Column(nullable = false)
     private boolean completed;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "habit_id")
+    @JoinColumn(name = "habit_id", nullable = false)
     private Habit habit;
 
     public HabitEntry() {
