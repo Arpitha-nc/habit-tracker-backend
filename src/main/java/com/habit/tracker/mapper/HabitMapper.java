@@ -15,7 +15,7 @@ public class HabitMapper {
         return habit;
     }
 
-    public static HabitResponse toResponse(Habit habit, int streak) {
+    public static HabitResponse toResponse(Habit habit, int streak, boolean completedToday) {
 
         HabitResponse response = new HabitResponse();
 
@@ -23,6 +23,8 @@ public class HabitMapper {
         response.setName(habit.getName());
         response.setDescription(habit.getDescription());
         response.setStreak(streak);
+        response.setCompletedToday(completedToday);
+        response.setCreatedAt(habit.getCreatedAt());
 
         return response;
     }

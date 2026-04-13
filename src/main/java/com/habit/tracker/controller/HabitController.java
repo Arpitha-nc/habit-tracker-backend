@@ -3,9 +3,14 @@ package com.habit.tracker.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import com.habit.tracker.dto.request.CreateHabitRequest;
+import com.habit.tracker.dto.request.UpdateHabitRequest;
+import com.habit.tracker.dto.response.DashboardResponse;
 import com.habit.tracker.dto.response.HabitResponse;
 import com.habit.tracker.dto.response.HeatmapResponse;
 import com.habit.tracker.dto.response.WeeklyProgressResponse;
@@ -24,28 +29,48 @@ public class HabitController {
     }
 
     @PostMapping
-    public HabitResponse createHabit(
-            @Valid @RequestBody CreateHabitRequest request) {
-
+    @ResponseStatus(HttpStatus.CREATED)
+    public HabitResponse createHabit(@Valid @RequestBody CreateHabitRequest request) {
         return habitService.createHabit(request);
     }
 
     @GetMapping
-    public List<HabitResponse> getHabits() {
+    public List<HabitResponse> getHabits(@PageableDefault(size = 100) Pageable pageable) {
+        return habitService.getHabits(pageable);
+    }
 
-        return habitService.getHabits();
+    @GetMapping("/{habitId}")
+    public HabitResponse getHabit(@PathVariable UUID habitId) {
+        return habitService.getHabit(habitId);
+    }
+
+    @PutMapping("/{habitId}")
+    public HabitResponse updateHabit(@PathVariable UUID habitId,
+            @Valid @RequestBody UpdateHabitRequest request) {
+        return habitService.updateHabit(habitId, request);
     }
 
     @DeleteMapping("/{habitId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteHabit(@PathVariable UUID habitId) {
-
         habitService.deleteHabit(habitId);
     }
 
     @PostMapping("/{habitId}/complete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void completeHabit(@PathVariable UUID habitId) {
-
         habitService.completeHabit(habitId);
+    }
+
+    @DeleteMapping("/{habitId}/complete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void uncompleteHabit(@PathVariable UUID habitId) {
+        habitService.uncompleteHabit(habitId);
+    }
+
+    @GetMapping("/dashboard")
+    public DashboardResponse getDashboard() {
+        return habitService.getDashboard();
     }
 
     @GetMapping("/progress/weekly")
