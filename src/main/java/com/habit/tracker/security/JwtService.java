@@ -3,19 +3,33 @@ package com.habit.tracker.security;
 import java.security.Key;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "your_secret_key";
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @PostConstruct
+    public void validateSecret() {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET environment variable is not set. Application cannot start.");
+        }
+        if (secretKey.getBytes().length < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 characters long.");
+        }
+    }
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
     public String generateToken(String email) {
@@ -28,17 +42,21 @@ public class JwtService {
     }
 
     public String extractEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (JwtException e) {
+            return null;
+        }
     }
 
     public boolean isTokenValid(String token, String email) {
         String extractedEmail = extractEmail(token);
-        return (extractedEmail.equals(email));
+        return extractedEmail != null && extractedEmail.equals(email);
     }
 
 }
