@@ -1,6 +1,11 @@
 package com.habit.tracker.entity;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +16,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
-public class User extends BaseEntity {
+public class User extends BaseEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -25,6 +30,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int xp;
 
     public User() {
     }
@@ -61,6 +69,24 @@ public class User extends BaseEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    public void setXp(int xp) {
+        this.xp = xp;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
 }
